@@ -413,7 +413,6 @@ if($INCORRECTVERSION -eq $CMakeVer) {
 }
 [System.String] $BPath = CreateBAT $CMakeVer
 if($null -eq $BPath) {
-    CleanupFiles
     EndScript "COULDNT CREATE BAT FILE"
 }
 $BPath = $BPath.Trim()
