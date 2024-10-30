@@ -38,6 +38,9 @@
     .PARAMETER CheckCmakeLists
     Optional. Default - $false. If true, check the presence of CmakeLists.txt file
 
+    .PARAMETER GenSolutionsOnly
+    Optional. Default - $false. If true, generate solutions and do not perform buils
+
     .PARAMETER CMakeListsFName
     Optional. Default - "CMakeLists.txt". CMake lists file name.
 
@@ -104,27 +107,28 @@
 Param ( [Parameter(Position = 0, Mandatory = $true)]   [System.String]   $SourceDir,
         [Parameter(Position = 1, Mandatory = $true)]   [System.String]   $BuildTool,
         [Parameter(Position = 2, Mandatory = $false)]  [System.String]   $BuildDir = "proj_build",
-        [Parameter(Position = 2, Mandatory = $false)]  [System.Boolean]  $CleanupBuildDir = $true,
-        [Parameter(Position = 2, Mandatory = $false)]  [System.Boolean]  $UseFullBuildPaths = $false,
-        [Parameter(Position = 2, Mandatory = $false)]  [System.Boolean]  $CheckCmakeLists = $false,
-        [Parameter(Position = 3, Mandatory = $false)]  [System.String]   $CMakeListsFName = "CMakeLists.txt",
-        [Parameter(Position = 4, Mandatory = $false)]  [System.String]   $CMakeEXEPath = "$env:PROGRAMFILES\CMake\bin\cmake.exe",
-        [Parameter(Position = 5, Mandatory = $false)]  [System.String]   $CMDEXEPath = "$env:SystemRoot\System32\cmd.exe",
-        [Parameter(Position = 6, Mandatory = $false)]  [System.Collections.Hashtable] $TargetBuilds = @{ 'Win32' = "build32"; 'x64' = "build64" },
-        [Parameter(Position = 7, Mandatory = $false)]  [System.Collections.Hashtable] $TargetBuildsPre313 = @{ 'Win32' = ""; 'x64' = "Win64" },
-        [Parameter(Position = 8, Mandatory = $false)]  [System.String[]] $TargetConfigs = @( "Debug", "Release" ),
-        [Parameter(Position = 9, Mandatory = $false)]  [System.String]   $BridgeCMakeVersion = "3.13",
-        [Parameter(Position = 10, Mandatory = $false)] [System.String]   $BlockSplitter = "Generators",
-        [Parameter(Position = 11, Mandatory = $false)] [System.String]   $SplitStr = "=",
-        [Parameter(Position = 12, Mandatory = $false)] [System.String]   $OperatorMark = "The following generators are available on this platform (* marks default):",
-        [Parameter(Position = 13, Mandatory = $false)] [System.String]   $ValMark = "Supply values for the following parameters:",
-        [Parameter(Position = 14, Mandatory = $false)] [System.String]   $ArchMark = "Use -A option to specify architecture",
-        [Parameter(Position = 15, Mandatory = $false)] [System.String]   $PlatformMark = "Optional",
-        [Parameter(Position = 16, Mandatory = $false)] [System.String]   $DeprecationMark = "(deprecated).",
-        [Parameter(Position = 17, Mandatory = $false)] [System.String]   $ExperimentMark = "experimental",
-        [Parameter(Position = 18, Mandatory = $false)] [System.String]   $Win64Mark = "Win64",
-        [Parameter(Position = 19, Mandatory = $false)] [System.String]   $MingwMark = "mingw32-make.",
-        [Parameter(Position = 20, Mandatory = $false)] [System.String]   $BATFName = "temp.bat" )
+        [Parameter(Position = 3, Mandatory = $false)]  [System.Boolean]  $CleanupBuildDir = $true,
+        [Parameter(Position = 4, Mandatory = $false)]  [System.Boolean]  $UseFullBuildPaths = $false,
+        [Parameter(Position = 5, Mandatory = $false)]  [System.Boolean]  $CheckCmakeLists = $false,
+        [Parameter(Position = 6, Mandatory = $false)]  [System.Boolean]  $GenSolutionsOnly = $false,
+        [Parameter(Position = 7, Mandatory = $false)]  [System.String]   $CMakeListsFName = "CMakeLists.txt",
+        [Parameter(Position = 8, Mandatory = $false)]  [System.String]   $CMakeEXEPath = "$env:PROGRAMFILES\CMake\bin\cmake.exe",
+        [Parameter(Position = 9, Mandatory = $false)]  [System.String]   $CMDEXEPath = "$env:SystemRoot\System32\cmd.exe",
+        [Parameter(Position = 10, Mandatory = $false)]  [System.Collections.Hashtable] $TargetBuilds = @{ 'Win32' = "build32"; 'x64' = "build64" },
+        [Parameter(Position = 11, Mandatory = $false)]  [System.Collections.Hashtable] $TargetBuildsPre313 = @{ 'Win32' = ""; 'x64' = "Win64" },
+        [Parameter(Position = 12, Mandatory = $false)]  [System.String[]] $TargetConfigs = @( "Debug", "Release" ),
+        [Parameter(Position = 13, Mandatory = $false)]  [System.String]   $BridgeCMakeVersion = "3.13",
+        [Parameter(Position = 14, Mandatory = $false)] [System.String]   $BlockSplitter = "Generators",
+        [Parameter(Position = 15, Mandatory = $false)] [System.String]   $SplitStr = "=",
+        [Parameter(Position = 16, Mandatory = $false)] [System.String]   $OperatorMark = "The following generators are available on this platform (* marks default):",
+        [Parameter(Position = 17, Mandatory = $false)] [System.String]   $ValMark = "Supply values for the following parameters:",
+        [Parameter(Position = 18, Mandatory = $false)] [System.String]   $ArchMark = "Use -A option to specify architecture",
+        [Parameter(Position = 19, Mandatory = $false)] [System.String]   $PlatformMark = "Optional",
+        [Parameter(Position = 20, Mandatory = $false)] [System.String]   $DeprecationMark = "(deprecated).",
+        [Parameter(Position = 21, Mandatory = $false)] [System.String]   $ExperimentMark = "experimental",
+        [Parameter(Position = 22, Mandatory = $false)] [System.String]   $Win64Mark = "Win64",
+        [Parameter(Position = 23, Mandatory = $false)] [System.String]   $MingwMark = "mingw32-make.",
+        [Parameter(Position = 24, Mandatory = $false)] [System.String]   $BATFName = "temp.bat" )
 
 # $ErrorActionPreference = 'Stop'
 $ErrorActionPreference = 'SilentlyContinue'
@@ -278,7 +282,8 @@ function BAT2File {
 function CreateBAT {
 
     Param ( [Parameter(Position = 0, Mandatory = $true)]  [System.Version] $CMakeVersion,
-            [Parameter(Position = 1, Mandatory = $false)] [System.Boolean] $FullBuildPaths = $script:UseFullBuildPaths )
+            [Parameter(Position = 1, Mandatory = $false)] [System.Boolean] $FullBuildPaths = $script:UseFullBuildPaths,
+            [Parameter(Position = 2, Mandatory = $false)] [System.Boolean] $SolutionsOnly = $script:GenSolutionsOnly )
 
     [System.String] $line
     [System.String[]] $Cmds = @( "cd `"$script:FULLBUILDPATH`"" )
@@ -292,14 +297,16 @@ function CreateBAT {
                 ($script:TargetBuilds.$key | Out-String -Stream)
             }
         }
-        foreach($key in $script:TargetBuilds.Keys) {
-            foreach ($rec in $script:TargetConfigs) {
-                if($FullBuildPaths) {
-                    $Cmds += "`"$script:CMakeEXEPath`" --build " +
-                    "`"$script:FULLBUILDPATH\" + ($script:TargetBuilds.$key | Out-String -Stream) + "`"" + " --config $rec"
-                } else {
-                    $Cmds += "`"$script:CMakeEXEPath`" --build " +
-                    ($script:TargetBuilds.$key | Out-String -Stream) + " --config $rec"
+        if(!$SolutionsOnly) {
+            foreach($key in $script:TargetBuilds.Keys) {
+                foreach ($rec in $script:TargetConfigs) {
+                    if($FullBuildPaths) {
+                        $Cmds += "`"$script:CMakeEXEPath`" --build " +
+                        "`"$script:FULLBUILDPATH\" + ($script:TargetBuilds.$key | Out-String -Stream) + "`"" + " --config $rec"
+                    } else {
+                        $Cmds += "`"$script:CMakeEXEPath`" --build " +
+                        ($script:TargetBuilds.$key | Out-String -Stream) + " --config $rec"
+                    }
                 }
             }
         }
@@ -324,14 +331,16 @@ function CreateBAT {
             }
             $Cmds += "popd"
         }
-        foreach ($key in $script:TargetBuilds.Keys) {
-            foreach($rec in $script:TargetConfigs) {
-                if($FullBuildPaths) {
-                    $Cmds += "`"$script:CMakeEXEPath`" --build " + "`"$script:FULLBUILDPATH\" +
-                    ($script:TargetBuilds.$key | Out-String -Stream) + "`" --config $rec"
-                } else {
-                    $Cmds += "`"$script:CMakeEXEPath`" --build " +
-                    ($script:TargetBuilds.$key | Out-String -Stream) + " --config $rec"
+        if(!$SolutionsOnly) {
+            foreach ($key in $script:TargetBuilds.Keys) {
+                foreach($rec in $script:TargetConfigs) {
+                    if($FullBuildPaths) {
+                        $Cmds += "`"$script:CMakeEXEPath`" --build " + "`"$script:FULLBUILDPATH\" +
+                        ($script:TargetBuilds.$key | Out-String -Stream) + "`" --config $rec"
+                    } else {
+                        $Cmds += "`"$script:CMakeEXEPath`" --build " +
+                        ($script:TargetBuilds.$key | Out-String -Stream) + " --config $rec"
+                    }
                 }
             }
         }
@@ -359,17 +368,19 @@ function EndScript {
     }
     if(($null -ne $Message) -and ($Message.Length -gt 0)) {
         WriteColored "`nBUILD ERROR OCCURED; PRESS ANY KEY TO CONTINUE" $script:MSGERRORCOLOR
+        [System.Void][System.Console]::ReadKey($true)
         [Environment]::Exit(1)
     } else {
         WriteColored "`nPRESS ANY KEY TO CONTINUE" $script:MSGCOLOR
+        [System.Void][System.Console]::ReadKey($true)
         [Environment]::Exit(0)
     }
-    [System.Void][System.Console]::ReadKey($true)
 }
 
 ######################################
 ############### SCRIPT ###############
 ######################################
+CreateBAT ([System.Version] "99.0")
 if((GetPSVersion $true) -lt $PSVERSIONMIN) {
     EndScript "POWERSHELL VERSION LOWER THAN REQUIRED ($PSVERSIONMIN)"
 }
