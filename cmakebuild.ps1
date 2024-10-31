@@ -52,7 +52,7 @@
 
     .PARAMETER TargetBuilds
     Optional. Default - @{ 'Win32' = "build32"; 'x64' = "build64" }. Hashtable, describing used build tools (keya) and platform
-    folder names (values). Intebded to be used with CMake 3.13+
+    folder names (values). Intended to be used with CMake 3.13+
 
     .PARAMETER TargetBuildsPre313
     Optional. Default - @{ 'Win32' = ""; 'x64' = "Win64" }. Parallel with TargetBuilds hashtable, describing used build tools
