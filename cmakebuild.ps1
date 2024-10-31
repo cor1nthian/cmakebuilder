@@ -423,7 +423,7 @@ if($CleanupBuildDir ) {
     RemoveFolderContent $FULLBUILDPATH
 }
 & $CMDEXEPath "/c `"$BPath`""
-Remove-Item $BPath -Force
+Remove-Item "$BPath" -Force
 EndScript
 
 # CreateBAT ([System.Version] "99.0") $true
