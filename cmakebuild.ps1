@@ -114,10 +114,10 @@ Param ( [Parameter(Position = 0, Mandatory = $true)]   [System.String]   $Source
         [Parameter(Position = 7, Mandatory = $false)]  [System.String]   $CMakeListsFName = "CMakeLists.txt",
         [Parameter(Position = 8, Mandatory = $false)]  [System.String]   $CMakeEXEPath = "$env:PROGRAMFILES\CMake\bin\cmake.exe",
         [Parameter(Position = 9, Mandatory = $false)]  [System.String]   $CMDEXEPath = "$env:SystemRoot\System32\cmd.exe",
-        [Parameter(Position = 10, Mandatory = $false)]  [System.Collections.Hashtable] $TargetBuilds = @{ 'Win32' = "build32"; 'x64' = "build64" },
-        [Parameter(Position = 11, Mandatory = $false)]  [System.Collections.Hashtable] $TargetBuildsPre313 = @{ 'Win32' = ""; 'x64' = "Win64" },
-        [Parameter(Position = 12, Mandatory = $false)]  [System.String[]] $TargetConfigs = @( "Debug", "Release" ),
-        [Parameter(Position = 13, Mandatory = $false)]  [System.String]   $BridgeCMakeVersion = "3.13",
+        [Parameter(Position = 10, Mandatory = $false)] [System.Collections.Hashtable] $TargetBuilds = @{ 'Win32' = "build32"; 'x64' = "build64" },
+        [Parameter(Position = 11, Mandatory = $false)] [System.Collections.Hashtable] $TargetBuildsPre313 = @{ 'Win32' = ""; 'x64' = "Win64" },
+        [Parameter(Position = 12, Mandatory = $false)] [System.String[]] $TargetConfigs = @( "Debug", "Release" ),
+        [Parameter(Position = 13, Mandatory = $false)] [System.String]   $BridgeCMakeVersion = "3.13",
         [Parameter(Position = 14, Mandatory = $false)] [System.String]   $BlockSplitter = "Generators",
         [Parameter(Position = 15, Mandatory = $false)] [System.String]   $SplitStr = "=",
         [Parameter(Position = 16, Mandatory = $false)] [System.String]   $OperatorMark = "The following generators are available on this platform (* marks default):",
@@ -286,7 +286,11 @@ function CreateBAT {
             [Parameter(Position = 2, Mandatory = $false)] [System.Boolean] $SolutionsOnly = $script:GenSolutionsOnly )
 
     [System.String] $line
-    [System.String[]] $Cmds = @( "cd `"$script:FULLBUILDPATH`"" )
+    if($FullBuildPaths) {
+        [System.String[]] $Cmds = @( )
+    } else {
+        [System.String[]] $Cmds = @( "cd `"$script:FULLBUILDPATH`"" )
+    }
     if($CMakeVersion -ge [System.Version] $script:BridgeCMakeVersion) {
         foreach ($key in $script:TargetBuilds.Keys) {
             if($FullBuildPaths) {
@@ -380,7 +384,7 @@ function EndScript {
 ######################################
 ############### SCRIPT ###############
 ######################################
-CreateBAT ([System.Version] "99.0")
+CreateBAT ([System.Version] "99.0") $true
 if((GetPSVersion $true) -lt $PSVERSIONMIN) {
     EndScript "POWERSHELL VERSION LOWER THAN REQUIRED ($PSVERSIONMIN)"
 }
