@@ -142,10 +142,10 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 function RemoveFolderContent {
 
-  Param ( [Parameter(Position = 0, Mandatory = $true)]  [System.String] $FolderPath )
+    Param ( [Parameter(Position = 0, Mandatory = $true)]  [System.String] $FolderPath )
 
-  # Get-ChildItem -Path $FolderPath -Include * -Recurse | ForEach-Object { $_.Delete() }
-  Remove-Item "$FolderPath\*" -Recurse -Force
+    # Get-ChildItem -Path $FolderPath -Include * -Recurse | ForEach-Object { $_.Delete() }
+    Remove-Item "$FolderPath\*" -Recurse -Force
 }
 
 function GetPSVersion {
@@ -384,7 +384,6 @@ function EndScript {
 ######################################
 ############### SCRIPT ###############
 ######################################
-CreateBAT ([System.Version] "99.0") $true
 if((GetPSVersion $true) -lt $PSVERSIONMIN) {
     EndScript "POWERSHELL VERSION LOWER THAN REQUIRED ($PSVERSIONMIN)"
 }
@@ -426,6 +425,8 @@ if($CleanupBuildDir ) {
 & $CMDEXEPath "/c `"$BPath`""
 Remove-Item $BPath -Force
 EndScript
+
+# CreateBAT ([System.Version] "99.0") $true
 
 # Add-Type -AssemblyName System.Windows.Forms
 # [System.Void] [System.Reflection.Assembly]::LoadWithPartialName("System.Version")
