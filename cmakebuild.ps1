@@ -318,7 +318,7 @@ function CreateBAT {
         [System.String[]] $pre313KeyArr = @($script:TargetBuilds.Keys)
         [System.String[]] $pre313ValArr = @($script:TargetBuildsPre313.Values)
         foreach ($key in $script:TargetBuilds.Keys) {
-            if(!(CreateFolder ("$script:FULLBUILDPATH\" + $script:TargetBuilds.$key | Out-String -Stream))) {
+            if(!(CreateFolder ("$script:FULLBUILDPATH\" + ($script:TargetBuilds.$key | Out-String -Stream)))) {
                 return $null
             }
             [System.Int16] $keyIdx = $pre313KeyArr.IndexOf($key)
@@ -354,8 +354,8 @@ function CreateBAT {
 
 function WriteColored {
 
-    Param ( [Parameter(Position = 0, Mandatory = $true)]  [System.String] $Message,
-            [Parameter(Position = 1, Mandatory = $false)] [System.String] $Color = $dcript:MSGERRORCOLOR )
+    Param ( [Parameter(Position = 0, Mandatory = $true)] [System.String] $Message,
+            [Parameter(Position = 1, Mandatory = $true)] [System.String] $Color )
 
     [System.ConsoleColor] $conColor = $host.UI.RawUI.ForegroundColor
     $host.UI.RawUI.ForegroundColor = $Color
@@ -368,11 +368,12 @@ function EndScript {
     Param ( [Parameter(Position = 0, Mandatory = $false)][AllowEmptyString()] [System.String] $Message )
 
     if(($null -ne $Message) -and ($Message.Length -gt 0)) {
-        WriteColored $Message
+        WriteColored $Message $script:MSGERRORCOLOR
     }
     if(($null -ne $Message) -and ($Message.Length -gt 0)) {
         WriteColored "`nBUILD ERROR OCCURED; PRESS ANY KEY TO CONTINUE" $script:MSGERRORCOLOR
         [System.Void][System.Console]::ReadKey($true)
+        End 1
         [Environment]::Exit(1)
     } else {
         WriteColored "`nPRESS ANY KEY TO CONTINUE" $script:MSGCOLOR
