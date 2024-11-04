@@ -373,7 +373,6 @@ function EndScript {
     if(($null -ne $Message) -and ($Message.Length -gt 0)) {
         WriteColored "`nBUILD ERROR OCCURED; PRESS ANY KEY TO CONTINUE" $script:MSGERRORCOLOR
         [System.Void][System.Console]::ReadKey($true)
-        End 1
         [Environment]::Exit(1)
     } else {
         WriteColored "`nPRESS ANY KEY TO CONTINUE" $script:MSGCOLOR
